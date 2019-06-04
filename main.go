@@ -1,43 +1,18 @@
 package main
 
 import (
+	"C"
 	"fmt"
 
-	mcfgv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
+	"github.com/JAORMX/test-client/pkg/openshift"
 	mcfgclientset "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
-func GetAllMachineConfigPools(clientset *mcfgclientset.Clientset) (*mcfgv1.MachineConfigPoolList, error) {
-	return clientset.Machineconfiguration().MachineConfigPools().List(metav1.ListOptions{})
-}
-
-func GetMachineConfig(clientset *mcfgclientset.Clientset, name string) (*mcfgv1.MachineConfig, error) {
-	return clientset.Machineconfiguration().MachineConfigs().Get(name, metav1.GetOptions{})
-}
-
-func IsUnitEnabled(mcfg *mcfgv1.MachineConfig, unitName string) bool {
-	systemdUnits := mcfg.Spec.Config.Systemd.Units
-
-	for _, unit := range systemdUnits {
-		if unit.Name == unitName && *unit.Enabled == true {
-			return true
-		}
-	}
-	return false
-}
-
-func SetupKubeConfig() (*restclient.Config, error) {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	configOverrides := &clientcmd.ConfigOverrides{}
-	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
-	return kubeConfig.ClientConfig()
-}
-
-func main() {
-	config, err := SetupKubeConfig()
+//export machineconfig_systemd_unit_complies
+func machineconfig_systemd_unit_complies(input *C.char) *C.char {
+	targetUnit := C.GoString(input)
+	pass := true
+	config, err := openshift.SetupKubeConfig()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -48,7 +23,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	mcfgpools, err := GetAllMachineConfigPools(clientset)
+	mcfgpools, err := openshift.GetAllMachineConfigPools(clientset)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -56,16 +31,26 @@ func main() {
 	for _, machineconfigpool := range mcfgpools.Items {
 		mcfgpoolName := machineconfigpool.ObjectMeta.Name
 		effectiveMcfg := machineconfigpool.Status.Configuration.Name
-		mcfg, err := GetMachineConfig(clientset, effectiveMcfg)
+		mcfg, err := openshift.GetMachineConfig(clientset, effectiveMcfg)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		if IsUnitEnabled(mcfg, "auditd.service") {
-			fmt.Printf("Auditd is enabled for the node role '%s'\n", mcfgpoolName)
+		if openshift.IsUnitEnabled(mcfg, targetUnit) {
+			fmt.Printf("'%s' is enabled for the node role '%s'\n", targetUnit, mcfgpoolName)
 		} else {
-			fmt.Printf("Auditd is NOT enabled for the node role '%s'\n", mcfgpoolName)
+			fmt.Printf("'%s' is NOT enabled for the node role '%s'\n", targetUnit, mcfgpoolName)
+			pass = false
 		}
 
 	}
+
+	if pass {
+		return C.CString("complies")
+	} else {
+		return C.CString("sucks")
+	}
 }
+
+// We need an entry point; it's ok for this to be empty
+func main() {}
