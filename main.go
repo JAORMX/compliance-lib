@@ -48,7 +48,7 @@ func machineconfig_systemd_unit_complies(input *C.char) *C.char {
 	if pass {
 		return C.CString("complies")
 	} else {
-		return C.CString("sucks")
+		return C.CString("doesn't comply & makes me sad")
 	}
 }
 
