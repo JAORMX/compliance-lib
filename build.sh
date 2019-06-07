@@ -1,4 +1,4 @@
 #!/bin/bash
 
-go build --buildmode=c-shared -o libmachineconfigcheck.so lib.go
-gcc -o docheck docheck.c ./libmachineconfigcheck.so
+make build
+gcc -o build/docheck docheck.c ./build/libopenshiftcompliance.so -Ibuild

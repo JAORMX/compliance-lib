@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "libmachineconfigcheck.h"
+#include "libopenshiftcompliance.h"
 
 int main (int argc, char *argv[])
 {
