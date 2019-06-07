@@ -9,7 +9,7 @@ import (
 )
 
 //export machineconfig_systemd_unit_complies
-func machineconfig_systemd_unit_complies(input *C.char) *C.char {
+func machineconfig_systemd_unit_complies(input *C.char) bool {
 	targetUnit := C.GoString(input)
 	pass := true
 	config, err := openshift.SetupKubeConfig()
@@ -45,11 +45,7 @@ func machineconfig_systemd_unit_complies(input *C.char) *C.char {
 
 	}
 
-	if pass {
-		return C.CString("complies")
-	} else {
-		return C.CString("doesn't comply & makes me sad")
-	}
+	return pass
 }
 
 // We need an entry point; it's ok for this to be empty
