@@ -1,4 +1,4 @@
-module github.com/JAORMX/test-client
+module github.com/JAORMX/compliance-lib
 
 go 1.12
 
