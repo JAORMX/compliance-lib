@@ -4,7 +4,7 @@ import (
 	"C"
 	"fmt"
 
-	"github.com/JAORMX/test-client/pkg/openshift"
+	"github.com/JAORMX/compliance-lib/pkg/openshift"
 	mcfgclientset "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned"
 )
 
