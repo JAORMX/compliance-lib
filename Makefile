@@ -5,25 +5,25 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BUILD_DIR=build
-LIBRARY_NAME=libopenshiftcompliance
+NAME=openshiftcompliance
+LIBRARY_NAME=lib$(NAME)
 SHARED_LIBRARY_NAME=$(BUILD_DIR)/$(LIBRARY_NAME).so
 HEADER_FILE_NAME=$(BUILD_DIR)/$(LIBRARY_NAME).h
-BINARY_UNIX=$(BINARY_NAME)_unix
+PKG_CONFIG=$(NAME).pc
+PKG_CONFIG_DIR=$(realpath $(BUILD_DIR))
 
 .PHONY: build test clean
 
 all: test build
 build: 
 	GO111MODULE=on $(GOBUILD) -o $(SHARED_LIBRARY_NAME) -v lib.go
+	sed -e 's|@PREFIX@|$(PKG_CONFIG_DIR)|' $(PKG_CONFIG).in > $(BUILD_DIR)/$(PKG_CONFIG)
 test: 
 	$(GOTEST) -v ./...
 clean: 
 	$(GOCLEAN)
 	rm -f $(SHARED_LIBRARY_NAME) $(HEADER_FILE_NAME)
-# We don't have to run this just yet
-# run:
-# 	$(GOBUILD) -o $(BINARY_NAME) -v ./...
-# 	./$(BINARY_NAME)
+	rm -f $(BUILD_DIR)/$(PKG_CONFIG)
 
 # Dependencies are managed by Go mod.
 deps:
