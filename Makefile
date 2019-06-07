@@ -16,7 +16,7 @@ all: test build
 build: 
 	GO111MODULE=on $(GOBUILD) -o $(SHARED_LIBRARY_NAME) -v lib.go
 test: 
-	$(GOBUILD) -v ./...
+	$(GOTEST) -v ./...
 clean: 
 	$(GOCLEAN)
 	rm -f $(SHARED_LIBRARY_NAME) $(HEADER_FILE_NAME)
